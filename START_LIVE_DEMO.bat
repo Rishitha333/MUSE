@@ -15,7 +15,7 @@ if errorlevel 1 (
     echo     Starting local MongoDB service...
     net start MongoDB >nul 2>&1
     if errorlevel 1 (
-        echo     [!] Note: If using MongoDB Atlas in backend/.env, local service is optional.
+        echo     [!] Note: If local MongoDB is not installed, ensure backend\.env has MONGODB_URI.
     ) else (
         echo     [OK] MongoDB is running.
     )
@@ -26,7 +26,11 @@ echo.
 
 REM 2. Start Backend
 echo [2/3] Starting MUSE Backend on port 5000...
-start "MUSE Backend API (port 5000)" cmd /k "cd /d "%~dp0\backend" && call venv311\Scripts\activate.bat && python app.py"
+if exist "%~dp0backend\venv311\Scripts\activate.bat" (
+    start "MUSE Backend API (port 5000)" cmd /k "cd /d %~dp0backend && call venv311\Scripts\activate.bat && python app.py"
+) else (
+    start "MUSE Backend API (port 5000)" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.bat && python app.py"
+)
 
 echo     Waiting for backend to initialize...
 timeout /t 6 /nobreak >nul
@@ -42,6 +46,6 @@ echo   Copy that URL and use it as VITE_API_URL on Vercel!
 echo ============================================================
 echo.
 
-"%~dp0\cloudflared.exe" tunnel --url http://127.0.0.1:5000
+"%~dp0cloudflared.exe" tunnel --url http://127.0.0.1:5000
 
 pause
