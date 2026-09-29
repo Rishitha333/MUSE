@@ -31,10 +31,9 @@ data/*.npy
 
 # Datasets - not redistributable
 datasets/
-data/*.csv
-data/*.npy
 *.csv
 
-# Trained models
-*.pkl
-backend/models/
+# Trained models (allow lightweight classifier weights, ignore heavy model caches)
+backend/models/*
+!backend/models/sarcasm_classifier.pkl
+!backend/models/sentiment_classifier.pkl

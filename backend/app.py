@@ -30,8 +30,11 @@ from auth.auth_utils import optional_auth
 app = Flask(__name__)
 
 # CORS Configuration
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
-CORS(app, origins=cors_origins.split(","))
+cors_origins = os.getenv("CORS_ORIGINS", "*")
+if cors_origins == "*":
+    CORS(app, resources={r"/*": {"origins": "*"}})
+else:
+    CORS(app, resources={r"/*": {"origins": [o.strip() for o in cors_origins.split(",") if o.strip()]}})
 
 UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -267,7 +270,9 @@ def analyze(current_user=None):
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    debug_mode = os.environ.get("FLASK_DEBUG", "False").lower() in ("true", "1")
     try:
-        app.run(debug=True)
+        app.run(host="0.0.0.0", port=port, debug=debug_mode)
     finally:
         close_db()
