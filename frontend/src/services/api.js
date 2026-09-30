@@ -1,13 +1,32 @@
 import axios from "axios";
+ 
+export const getApiBaseUrl = () => {
+  const custom = localStorage.getItem("custom_api_url");
+  if (custom && custom.trim()) {
+    return custom.trim().replace(/\/+$/, "");
+  }
+  const raw = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+  return typeof raw === "string" ? raw.trim().replace(/\/+$/, "") : "http://127.0.0.1:5000";
+};
 
-const RAW_API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-const API_BASE_URL = typeof RAW_API_URL === "string" ? RAW_API_URL.trim().replace(/\/+$/, "") : "http://127.0.0.1:5000";
+export const setCustomApiUrl = (url) => {
+  if (!url || !url.trim()) {
+    localStorage.removeItem("custom_api_url");
+  } else {
+    localStorage.setItem("custom_api_url", url.trim().replace(/\/+$/, ""));
+  }
+};
 
 const API = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+API.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
+  return config;
 });
 
 const getAuthToken = () => localStorage.getItem("token");
