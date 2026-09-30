@@ -46,6 +46,6 @@ echo   Copy that URL and use it as VITE_API_URL on Vercel!
 echo ============================================================
 echo.
 
-"%~dp0cloudflared.exe" tunnel --url http://127.0.0.1:5000
+"%~dp0cloudflared.exe" tunnel --logfile "%~dp0tunnel.log" --url http://127.0.0.1:5000
 
 pause
