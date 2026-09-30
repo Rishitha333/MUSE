@@ -27,9 +27,9 @@ echo.
 REM 2. Start Backend
 echo [2/3] Starting MUSE Backend on port 5000...
 if exist "%~dp0backend\venv311\Scripts\activate.bat" (
-    start "MUSE Backend API (port 5000)" cmd /k "cd /d %~dp0backend && call venv311\Scripts\activate.bat && python app.py"
+    start "MUSE Backend API (port 5000)" cmd /k "chcp 65001 >nul && set PYTHONIOENCODING=utf-8 && cd /d %~dp0backend && call venv311\Scripts\activate.bat && python app.py"
 ) else (
-    start "MUSE Backend API (port 5000)" cmd /k "cd /d %~dp0backend && call venv\Scripts\activate.bat && python app.py"
+    start "MUSE Backend API (port 5000)" cmd /k "chcp 65001 >nul && set PYTHONIOENCODING=utf-8 && cd /d %~dp0backend && call venv\Scripts\activate.bat && python app.py"
 )
 
 echo     Waiting for backend to initialize...

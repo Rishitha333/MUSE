@@ -14,21 +14,23 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); 
 
-const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       const response = await login(email, password);
       console.log("Login successful:", response);
-      if (role === "admin") {
+      const userRole = response?.user?.role || role;
+      if (userRole === "admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.response?.data?.error || "Login failed. Please check your credentials.");
+      const msg = err.response?.data?.error || (err.message === "Network Error" ? "Cannot connect to Backend. Please verify Cloudflare tunnel is running and VITE_API_URL is configured." : "Login failed. Please check your credentials.");
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -75,11 +77,18 @@ const handleLogin = async (e) => {
               Welcome Back
             </h2>
 
-            <p className={`text-center mb-8 ${
+            <p className={`text-center mb-6 ${
               isDark ? "text-slate-300" : "text-gray-700"
             }`}>
               "Access the MUSE AI System"
             </p>
+
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-200 text-sm flex items-start gap-2 animate-shake">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
 
             <form onSubmit={handleLogin} className="space-y-5">
 
@@ -163,13 +172,16 @@ const handleLogin = async (e) => {
                   {/* LOGIN BUTTON */}
                   <button
                     type="submit"
+                    disabled={loading}
                     className={`w-full h-11 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
+                      loading ? "opacity-70 cursor-not-allowed" : ""
+                    } ${
                       isDark
                         ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-transparent shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:to-purple-700 hover:shadow-indigo-500/50"
                         : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border border-transparent shadow-md hover:from-indigo-700 hover:to-purple-700 active:scale-95"
                     }`}
                   >
-                    🚀 Enter AI Workspace
+                    {loading ? "Signing in..." : "🚀 Enter AI Workspace"}
                   </button>
                 </form>
 

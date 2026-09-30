@@ -26,7 +26,10 @@ def create_admin_user():
         existing = users.find_one({"email": email})
         
         if existing:
-            print(f"✅ Admin user already exists: {email}")
+            import bcrypt
+            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode("utf-8")
+            users.update_one({"email": email}, {"$set": {"password": hashed, "role": role, "is_active": True}})
+            print(f"✅ Admin user credentials refreshed: {email}")
             print(f"   Email: {email}")
             print(f"   Password: {password}")
             print(f"   Role: {role}")
@@ -63,7 +66,10 @@ def create_regular_user():
         existing = users.find_one({"email": email})
         
         if existing:
-            print(f"✅ Test user already exists: {email}")
+            import bcrypt
+            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode("utf-8")
+            users.update_one({"email": email}, {"$set": {"password": hashed, "role": "user", "is_active": True}})
+            print(f"✅ Test user credentials refreshed: {email}")
             print(f"   Email: {email}")
             print(f"   Password: {password}")
             return
