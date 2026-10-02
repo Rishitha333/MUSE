@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
+import { logout } from "../services/api";
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
@@ -82,7 +83,10 @@ export default function AdminSidebar() {
       {/* LOGOUT */}
       <div className={`p-4 border-t ${isDark ? 'border-gray-700' : 'border-white/20'}`}>
         <button
-          onClick={() => navigate("/login")}
+          onClick={() => {
+          logout();
+          navigate("/login");
+          }}
           className={`w-full py-2 rounded transition font-semibold ${
             isDark
               ? 'bg-red-600 hover:bg-red-700 text-white'

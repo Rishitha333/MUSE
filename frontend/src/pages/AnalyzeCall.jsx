@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCall } from "../context/useCall";
-import { analyzeCallApi } from "../services/api";
+import { analyzeCallApi, isDemoMode } from "../services/api";
+import { DEMO_CALLS, toResultsState } from "../demo/demoData";
 
 export default function AnalyzeCall() {
   const navigate = useNavigate();
@@ -95,12 +96,46 @@ const startAnalysis = async () => {
     setStep(0);
   };
 
+  const loadSample = (call) => {
+  setCurrentCallId(call.call_id);
+  navigate("/dashboard/results", { state: toResultsState(call) });
+};
+
   return (
     <div className="max-w-5xl mx-auto rounded-lg p-8 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
 
       <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
         Analyze Customer Call
       </h2>
+
+      {isDemoMode() && (
+  <div className="mb-6 p-4 rounded-lg border border-violet-400/40 bg-violet-50 dark:bg-slate-800">
+    <p className="font-semibold text-violet-800 dark:text-violet-300 mb-1">
+      Demo mode: load a sample call
+    </p>
+    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+      Live audio analysis needs the AI backend, so pick one of these real, pre-analyzed calls to see the full results page.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {DEMO_CALLS.map((call) => (
+        <button
+          key={call.call_id}
+          type="button"
+          onClick={() => loadSample(call)}
+          className="text-left p-3 rounded-lg border border-violet-300 bg-white dark:bg-slate-900 hover:border-violet-500 hover:shadow transition"
+        >
+          <p className="font-mono text-xs text-violet-700 dark:text-cyan-400 font-bold">{call.call_id}</p>
+          <p className="text-sm text-gray-800 dark:text-gray-200">
+            {call.detected_language} → {call.target_language}
+          </p>
+          <p className="text-xs text-gray-500">
+            {call.text.sentiment} · {call.audio.tone} · sarcasm {call.results.final_sarcasm_score.toFixed(2)}
+          </p>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
       {/* Audio Upload */}
       <div className="border-2 border-dashed border-violet-400 dark:border-violet-500 rounded-lg p-8 text-center mb-6 bg-violet-100 dark:bg-slate-800">

@@ -27,7 +27,8 @@ export default function Dashboard() {
 
         const transformed = historyResponse.history.map((item) => ({
           id: item._id,
-          callId: item._id,
+          // Same readable Call ID as Results & History pages
+          callId: item.call_id || item._id,
           timestamp: item.timestamp,
           language: `${item.input?.source_lang || "Unknown"} → ${item.input?.target_lang || "English"}`,
           sentiment: item.text?.sentiment || "N/A",
@@ -140,7 +141,7 @@ export default function Dashboard() {
                       return (
                         <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 text-gray-800 transition">
                           <td className="px-6 py-4 text-violet-600 font-mono font-bold text-sm">
-                            {String(item.callId).slice(0, 18)}...
+                            {item.callId}
                           </td>
                           <td className="px-6 py-4 text-gray-900 text-sm">{formatTimestamp(item.timestamp)}</td>
                           <td className="px-6 py-4">

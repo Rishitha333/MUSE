@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import Logo from "../components/Logo";
 import { ThemeContext } from "../context/ThemeContext";
-import { login, getApiBaseUrl, setCustomApiUrl } from "../services/api";
+import { login, enterDemoMode, exitDemoMode } from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,17 +13,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); 
-  const [apiUrl, setApiUrl] = useState(getApiBaseUrl());
-  const [showApiConfig, setShowApiConfig] = useState(false);
-  const [apiSavedMsg, setApiSavedMsg] = useState("");
 
-  const handleSaveApiUrl = (e) => {
-    e?.preventDefault();
-    setCustomApiUrl(apiUrl);
-    setApiSavedMsg("Backend URL saved! You can now log in.");
-    setError("");
-    setTimeout(() => setApiSavedMsg(""), 4000);
-  };
+  useEffect(() => {
+  // Visiting the login page always resets demo mode,
+  // unless the whole site is built as a demo (VITE_DEMO_MODE=true)
+  if (import.meta.env.VITE_DEMO_MODE !== "true") {
+    exitDemoMode();
+  }
+}, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -41,15 +38,21 @@ export default function Login() {
     } catch (err) {
       console.error("Login error:", err);
       const isNetworkError = err.message === "Network Error" || !err.response;
-      const msg = err.response?.data?.error || (isNetworkError ? "Cannot connect to Backend. Paste your active Cloudflare Tunnel URL below." : "Login failed. Please check your credentials.");
+      const msg =
+      err.response?.data?.error ||
+      (isNetworkError
+      ? "Server unavailable. Please try again in a moment."
+      : "Login failed. Please check your credentials.");
       setError(msg);
-      if (isNetworkError) {
-        setShowApiConfig(true);
-      }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleTryDemo = () => {
+  enterDemoMode();
+  navigate("/dashboard");
+};
 
   return (
     <div className={`min-h-screen text-white overflow-hidden ${
@@ -104,45 +107,6 @@ export default function Login() {
                 <span>{error}</span>
               </div>
             )}
-
-            {/* BACKEND TUNNEL URL CONFIGURATION PANEL */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[11px] opacity-75">Backend: {apiUrl ? apiUrl.replace(/^https?:\/\//, '').slice(0, 25) + '...' : 'Default'}</span>
-                <button
-                  type="button"
-                  onClick={() => setShowApiConfig(!showApiConfig)}
-                  className="text-xs font-medium text-cyan-400 hover:text-cyan-300 underline transition-colors"
-                >
-                  ⚙️ {showApiConfig ? "Close Settings" : "Change Backend URL"}
-                </button>
-              </div>
-
-              {showApiConfig && (
-                <div className="p-3 mt-2 rounded-lg bg-slate-900/90 border border-violet-500/40 text-xs text-white shadow-inner">
-                  <label className="block font-semibold text-violet-300 mb-1">
-                    Paste Cloudflare Tunnel URL:
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="https://xxxx.trycloudflare.com"
-                      value={apiUrl}
-                      onChange={(e) => setApiUrl(e.target.value)}
-                      className="flex-1 p-2 rounded bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-violet-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveApiUrl}
-                      className="px-3 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded font-semibold text-xs shadow-md transition-all"
-                    >
-                      Save URL
-                    </button>
-                  </div>
-                  {apiSavedMsg && <p className="text-emerald-400 font-medium mt-1.5">{apiSavedMsg}</p>}
-                </div>
-              )}
-            </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
 
@@ -238,6 +202,23 @@ export default function Login() {
                     {loading ? "Signing in..." : "🚀 Enter AI Workspace"}
                   </button>
                 </form>
+
+                <div className="mt-4">
+  <button
+    type="button"
+    onClick={handleTryDemo}
+    className={`w-full h-11 rounded-xl font-semibold border-2 transition-all duration-300 ${
+      isDark
+        ? "border-cyan-400 text-cyan-300 hover:bg-cyan-400/10"
+        : "border-purple-600 text-purple-700 hover:bg-purple-600/10"
+    }`}
+  >
+    🎬 Try Demo (no signup needed)
+  </button>
+  <p className={`text-xs text-center mt-2 ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+    Explore real sample analyses. No account or backend required.
+  </p>
+</div>
 
                 {/* REGISTER */}
                 <p className={`text-sm text-center mt-6 ${

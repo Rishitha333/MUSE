@@ -1,10 +1,12 @@
 import { useLocation } from "react-router-dom";
 import { useCall } from "../context/useCall";
+import { useState, useEffect } from "react";
 
 export default function Results() {
   const { currentCallId } = useCall();
   const location = useLocation();
   const state = location.state || {};
+  const [copied, setCopied] = useState(false);
 
   // Read real data from navigation state
   const {
@@ -24,6 +26,16 @@ export default function Results() {
   const sttAccuracy = sttConfidence ? (sttConfidence * 100).toFixed(0) + "%" : "N/A";
   const translationAccuracy = translationConfidence ? (translationConfidence * 100).toFixed(0) + "%" : "N/A";
   const sarcasmScore = finalSarcasmScore ? finalSarcasmScore.toFixed(2) : "N/A";
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(callId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
 
   const sentimentEmoji = {
     negative: "😡",
@@ -59,10 +71,15 @@ export default function Results() {
           <p className="text-purple-700 text-sm font-semibold">Call ID:</p>
           <p className="text-violet-400 font-mono font-bold">{callId}</p>
           <button
-            onClick={() => navigator.clipboard.writeText(callId)}
-            className="ml-2 px-2 py-1 bg-violet-500/20 border border-violet-400 text-violet-700 rounded text-xs hover:bg-violet-500/30 transition"
+            type="button"
+            onClick={handleCopy}
+            className={`ml-2 px-2 py-1 border rounded text-xs transition ${
+              copied
+                ? "bg-green-100 border-green-400 text-green-700"
+                : "bg-violet-500/20 border-violet-400 text-violet-700 hover:bg-violet-500/30"
+            }`}
           >
-            Copy
+            {copied ? "✓ Copied" : "Copy"}
           </button>
         </div>
       </div>
