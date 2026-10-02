@@ -210,9 +210,18 @@ const loadSample = (call) => {
       {demoNotice && (
         <div className="mb-6 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm">
           <p className="font-semibold mb-1">Live analysis is disabled in this public demo</p>
-          <p>
-            The AI pipeline (Whisper, NLLB-200, mBERT, RoBERTa) needs several GB of RAM, so it runs locally rather than on free hosting. Pick one of the sample calls above to see real pipeline output, or run the project locally from the GitHub README to analyze your own audio.
-          </p>
+<p>
+  The AI pipeline (Whisper, NLLB-200, mBERT, RoBERTa) needs several GB of RAM, so it runs locally rather than on free hosting. Pick one of the sample calls above to see real pipeline output, or{" "}
+  <a
+    href="https://github.com/Rishitha333/Muse_project"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="font-semibold underline"
+  >
+    clone the GitHub repo
+  </a>{" "}
+  to run the full pipeline on your own audio.
+</p>
         </div>
       )}
 

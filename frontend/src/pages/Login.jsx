@@ -227,6 +227,30 @@ export default function Login() {
               </p>
             </div>
 
+            {DEMO_ONLY && (
+  <div className={`mt-5 p-3 rounded-lg border text-xs text-center ${
+    isDark
+      ? "border-slate-600 bg-slate-900/60 text-slate-300"
+      : "border-purple-200 bg-purple-50 text-gray-700"
+  }`}>
+    <p className="mb-1">
+      This is a lightweight preview. The <strong>full working pipeline</strong> (Whisper
+      speech-to-text, NLLB-200 translation, mBERT sarcasm detection, RoBERTa sentiment,
+      user and admin panels) runs locally.
+    </p>
+    <a
+      href="https://github.com/Rishitha333/Muse_project"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`font-semibold underline ${
+        isDark ? "text-cyan-400 hover:text-cyan-300" : "text-purple-700 hover:text-purple-900"
+      }`}
+    >
+      Clone the repo and run the full project on GitHub →
+    </a>
+  </div>
+)}
+
             {/* REGISTER (hidden on the public demo build) */}
             {!DEMO_ONLY && (
               <p className={`text-sm text-center mt-6 ${
