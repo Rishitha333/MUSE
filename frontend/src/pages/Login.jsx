@@ -12,15 +12,16 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const DEMO_ONLY = import.meta.env.VITE_DEMO_MODE === "true";
 
   useEffect(() => {
-  // Visiting the login page always resets demo mode,
-  // unless the whole site is built as a demo (VITE_DEMO_MODE=true)
-  if (import.meta.env.VITE_DEMO_MODE !== "true") {
-    exitDemoMode();
-  }
-}, []);
+    // Visiting the login page always resets demo mode,
+    // unless the whole site is built as a demo (VITE_DEMO_MODE=true)
+    if (import.meta.env.VITE_DEMO_MODE !== "true") {
+      exitDemoMode();
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,10 +40,10 @@ export default function Login() {
       console.error("Login error:", err);
       const isNetworkError = err.message === "Network Error" || !err.response;
       const msg =
-      err.response?.data?.error ||
-      (isNetworkError
-      ? "Server unavailable. Please try again in a moment."
-      : "Login failed. Please check your credentials.");
+        err.response?.data?.error ||
+        (isNetworkError
+          ? "Server unavailable. Please try again in a moment."
+          : "Login failed. Please check your credentials.");
       setError(msg);
     } finally {
       setLoading(false);
@@ -50,9 +51,9 @@ export default function Login() {
   };
 
   const handleTryDemo = () => {
-  enterDemoMode();
-  navigate("/dashboard");
-};
+    enterDemoMode();
+    navigate("/dashboard");
+  };
 
   return (
     <div className={`min-h-screen text-white overflow-hidden ${
@@ -92,7 +93,7 @@ export default function Login() {
             </div>
 
             <h2 className="text-3xl font-bold text-center mb-2">
-              Welcome Back
+              {DEMO_ONLY ? "Welcome to the MUSE demo" : "Welcome Back"}
             </h2>
 
             <p className={`text-center mb-6 ${
@@ -108,132 +109,140 @@ export default function Login() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            {/* LOGIN FORM (hidden on the public demo build) */}
+            {!DEMO_ONLY && (
+              <form onSubmit={handleLogin} className="space-y-5">
 
-                  {/* ROLE */}
-                  <div>
-                    <label className={`text-sm font-semibold mb-2 block ${
-                      isDark ? "text-slate-300" : "text-gray-700"
-                    }`}>
-                      Login As
-                    </label>
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className={`w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
-                        isDark
-                          ? "bg-slate-700 border-slate-600 text-white"
-                          : "bg-gray-200 border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="user">
-                        User / Analyst
-                      </option>
-                      <option value="admin">
-                        Administrator
-                      </option>
-                    </select>
-                  </div>
-
-                  {/* EMAIL */}
-                  <div>
-                    <label className={`text-sm font-semibold mb-2 block ${
-                      isDark ? "text-slate-300" : "text-gray-900"
-                    }`}>
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className={`w-full p-3 rounded-lg border placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 ${
-                        isDark
-                          ? "bg-slate-700 border-slate-600 text-white"
-                          : "bg-white border-gray-300 text-black"
-                      }`}
-                    />
-                  </div>
-
-                  {/* PASSWORD */}
-                  <div>
-                    <label className={`text-sm font-semibold mb-2 block ${
-                      isDark ? "text-slate-300" : "text-gray-900"
-                    }`}>
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className={`w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
-                        isDark
-                          ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
-                          : "bg-white border-gray-300 text-black placeholder-gray-500"
-                      }`}
-                    />
-                  </div>
-
-                  {/* FORGOT PASSWORD */}
-                  <p
-                    onClick={() => navigate("/forgot-password")}
-                    className={`text-sm cursor-pointer text-right hover:underline font-semibold transition-colors duration-200 ${
-                      isDark ? "text-cyan-400 hover:text-cyan-300" : "text-purple-700"
-                    }`}
-                  >
-                    Forgot password?
-                  </p>
-
-                  {/* LOGIN BUTTON */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full h-11 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
-                      loading ? "opacity-70 cursor-not-allowed" : ""
-                    } ${
+                {/* ROLE */}
+                <div>
+                  <label className={`text-sm font-semibold mb-2 block ${
+                    isDark ? "text-slate-300" : "text-gray-700"
+                  }`}>
+                    Login As
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className={`w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
                       isDark
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-transparent shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:to-purple-700 hover:shadow-indigo-500/50"
-                        : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border border-transparent shadow-md hover:from-indigo-700 hover:to-purple-700 active:scale-95"
+                        ? "bg-slate-700 border-slate-600 text-white"
+                        : "bg-gray-200 border-gray-300 text-gray-900"
                     }`}
                   >
-                    {loading ? "Signing in..." : "🚀 Enter AI Workspace"}
-                  </button>
-                </form>
+                    <option value="user">
+                      User / Analyst
+                    </option>
+                    <option value="admin">
+                      Administrator
+                    </option>
+                  </select>
+                </div>
 
-                <div className="mt-4">
-  <button
-    type="button"
-    onClick={handleTryDemo}
-    className={`w-full h-11 rounded-xl font-semibold border-2 transition-all duration-300 ${
-      isDark
-        ? "border-cyan-400 text-cyan-300 hover:bg-cyan-400/10"
-        : "border-purple-600 text-purple-700 hover:bg-purple-600/10"
-    }`}
-  >
-    🎬 Try Demo (no signup needed)
-  </button>
-  <p className={`text-xs text-center mt-2 ${isDark ? "text-slate-400" : "text-gray-600"}`}>
-    Explore real sample analyses. No account or backend required.
-  </p>
-</div>
-
-                {/* REGISTER */}
-                <p className={`text-sm text-center mt-6 ${
-                  isDark ? "text-slate-400" : "text-gray-700"
-                }`}>
-                  New to MUSE?{" "}
-                  <span
-                    onClick={() => navigate("/register")}
-                    className={`cursor-pointer font-semibold hover:underline transition-colors duration-200 ${
-                      isDark ? "text-cyan-400 hover:text-cyan-300" : "text-purple-700"
+                {/* EMAIL */}
+                <div>
+                  <label className={`text-sm font-semibold mb-2 block ${
+                    isDark ? "text-slate-300" : "text-gray-900"
+                  }`}>
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className={`w-full p-3 rounded-lg border placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                      isDark
+                        ? "bg-slate-700 border-slate-600 text-white"
+                        : "bg-white border-gray-300 text-black"
                     }`}
-                  >
-                    Create Account
-                  </span>
+                  />
+                </div>
+
+                {/* PASSWORD */}
+                <div>
+                  <label className={`text-sm font-semibold mb-2 block ${
+                    isDark ? "text-slate-300" : "text-gray-900"
+                  }`}>
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className={`w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                      isDark
+                        ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                        : "bg-white border-gray-300 text-black placeholder-gray-500"
+                    }`}
+                  />
+                </div>
+
+                {/* FORGOT PASSWORD */}
+                <p
+                  onClick={() => navigate("/forgot-password")}
+                  className={`text-sm cursor-pointer text-right hover:underline font-semibold transition-colors duration-200 ${
+                    isDark ? "text-cyan-400 hover:text-cyan-300" : "text-purple-700"
+                  }`}
+                >
+                  Forgot password?
                 </p>
+
+                {/* LOGIN BUTTON */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full h-11 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
+                    loading ? "opacity-70 cursor-not-allowed" : ""
+                  } ${
+                    isDark
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-transparent shadow-lg shadow-indigo-500/30 hover:from-indigo-600 hover:to-purple-700 hover:shadow-indigo-500/50"
+                      : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border border-transparent shadow-md hover:from-indigo-700 hover:to-purple-700 active:scale-95"
+                  }`}
+                >
+                  {loading ? "Signing in..." : "🚀 Enter AI Workspace"}
+                </button>
+              </form>
+            )}
+
+            {/* TRY DEMO */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleTryDemo}
+                className={`w-full h-11 rounded-xl font-semibold border-2 transition-all duration-300 ${
+                  isDark
+                    ? "border-cyan-400 text-cyan-300 hover:bg-cyan-400/10"
+                    : "border-purple-600 text-purple-700 hover:bg-purple-600/10"
+                }`}
+              >
+                🎬 Try Demo (no signup needed)
+              </button>
+              <p className={`text-xs text-center mt-2 ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+                {DEMO_ONLY
+                  ? "This public demo uses pre-computed results from the real pipeline. Login and registration are disabled."
+                  : "Explore real sample analyses. No account or backend required."}
+              </p>
+            </div>
+
+            {/* REGISTER (hidden on the public demo build) */}
+            {!DEMO_ONLY && (
+              <p className={`text-sm text-center mt-6 ${
+                isDark ? "text-slate-400" : "text-gray-700"
+              }`}>
+                New to MUSE?{" "}
+                <span
+                  onClick={() => navigate("/register")}
+                  className={`cursor-pointer font-semibold hover:underline transition-colors duration-200 ${
+                    isDark ? "text-cyan-400 hover:text-cyan-300" : "text-purple-700"
+                  }`}
+                >
+                  Create Account
+                </span>
+              </p>
+            )}
 
           </div>
         </div>
@@ -242,14 +251,3 @@ export default function Login() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
