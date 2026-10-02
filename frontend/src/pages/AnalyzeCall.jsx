@@ -12,6 +12,7 @@ export default function AnalyzeCall() {
   const [step, setStep] = useState(0);
   const [sourceLang, setSourceLang] = useState("Auto Detect");
   const [targetLang, setTargetLang] = useState("English");
+  const [demoNotice, setDemoNotice] = useState(false);
 
   useEffect(() => {
     if (step === 4) {
@@ -35,10 +36,16 @@ export default function AnalyzeCall() {
       setAudioFile(file);
       setAudioURL(URL.createObjectURL(file));
       setStep(0);
+      setDemoNotice(false);
     }
   };
 
-const startAnalysis = async () => {
+  const startAnalysis = async () => {
+    if (isDemoMode()) {
+      setDemoNotice(true);
+      return;
+    }
+
     if (!audioFile) {
       alert("Please upload an audio file");
       return;
@@ -60,10 +67,9 @@ const startAnalysis = async () => {
       setStep(3);
       setStep(4);
 
-
       navigate("/dashboard/results", {
         state: {
-          callId: realId, 
+          callId: realId,
           transcript: response.transcript,
           translatedTranscript: response.translated_transcript,
           finalSarcasmScore: response.final_sarcasm_score,
@@ -94,10 +100,10 @@ const startAnalysis = async () => {
     setAudioFile(null);
     setAudioURL(null);
     setStep(0);
+    setDemoNotice(false);
   };
 
-  const loadSample = (call) => {
-  setCurrentCallId(call.call_id);
+const loadSample = (call) => {
   navigate("/dashboard/results", { state: toResultsState(call) });
 };
 
@@ -108,34 +114,35 @@ const startAnalysis = async () => {
         Analyze Customer Call
       </h2>
 
+      {/* Demo mode: sample call picker */}
       {isDemoMode() && (
-  <div className="mb-6 p-4 rounded-lg border border-violet-400/40 bg-violet-50 dark:bg-slate-800">
-    <p className="font-semibold text-violet-800 dark:text-violet-300 mb-1">
-      Demo mode: load a sample call
-    </p>
-    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-      Live audio analysis needs the AI backend, so pick one of these real, pre-analyzed calls to see the full results page.
-    </p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {DEMO_CALLS.map((call) => (
-        <button
-          key={call.call_id}
-          type="button"
-          onClick={() => loadSample(call)}
-          className="text-left p-3 rounded-lg border border-violet-300 bg-white dark:bg-slate-900 hover:border-violet-500 hover:shadow transition"
-        >
-          <p className="font-mono text-xs text-violet-700 dark:text-cyan-400 font-bold">{call.call_id}</p>
-          <p className="text-sm text-gray-800 dark:text-gray-200">
-            {call.detected_language} → {call.target_language}
+        <div className="mb-6 p-4 rounded-lg border border-violet-400/40 bg-violet-50 dark:bg-slate-800">
+          <p className="font-semibold text-violet-800 dark:text-violet-300 mb-1">
+            Demo mode: load a sample call
           </p>
-          <p className="text-xs text-gray-500">
-            {call.text.sentiment} · {call.audio.tone} · sarcasm {call.results.final_sarcasm_score.toFixed(2)}
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            Live audio analysis needs the AI backend, so pick one of these real, pre-analyzed calls to see the full results page.
           </p>
-        </button>
-      ))}
-    </div>
-  </div>
-)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {DEMO_CALLS.map((call) => (
+              <button
+                key={call.call_id}
+                type="button"
+                onClick={() => loadSample(call)}
+                className="text-left p-3 rounded-lg border border-violet-300 bg-white dark:bg-slate-900 hover:border-violet-500 hover:shadow transition"
+              >
+                <p className="font-mono text-xs text-violet-700 dark:text-cyan-400 font-bold">{call.call_id}</p>
+                <p className="text-sm text-gray-800 dark:text-gray-200">
+                  {call.detected_language} → {call.target_language}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {call.text.sentiment} · {call.audio.tone} · sarcasm {call.results.final_sarcasm_score.toFixed(2)}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Audio Upload */}
       <div className="border-2 border-dashed border-violet-400 dark:border-violet-500 rounded-lg p-8 text-center mb-6 bg-violet-100 dark:bg-slate-800">
@@ -157,47 +164,57 @@ const startAnalysis = async () => {
         )}
       </div>
 
-{/* Language Selection */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-  <div>
-    <label className="block text-sm font-medium text-white/90 mb-1">
-      Source Language
-    </label>
-    <select
-      value={sourceLang}
-      onChange={(e) => setSourceLang(e.target.value)}
-      className="w-full border border-gray-300 bg-gray-100 text-gray-800 text-gray-900 rounded-md p-2 backdrop-blur-sm"
-    >
-      <option>Auto Detect</option>
-      <option>English</option>
-      <option>Tamil</option>
-      <option>Kannada</option>
-      <option>Hindi</option>
-      <option>Telugu</option>
-      <option>Malayalam</option>
-      <option>Marathi</option>
-    </select>
-  </div>
+      {/* Language Selection */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-white/90 mb-1">
+            Source Language
+          </label>
+          <select
+            value={sourceLang}
+            onChange={(e) => setSourceLang(e.target.value)}
+            className="w-full border border-gray-300 bg-gray-100 text-gray-800 text-gray-900 rounded-md p-2 backdrop-blur-sm"
+          >
+            <option>Auto Detect</option>
+            <option>English</option>
+            <option>Tamil</option>
+            <option>Kannada</option>
+            <option>Hindi</option>
+            <option>Telugu</option>
+            <option>Malayalam</option>
+            <option>Marathi</option>
+          </select>
+        </div>
 
-  <div>
-    <label className="block text-sm font-medium text-white/90 mb-1">
-      Target Language
-    </label>
-    <select
-      value={targetLang}
-      onChange={(e) => setTargetLang(e.target.value)}
-      className="w-full border border-gray-300 bg-gray-100 text-gray-800 text-gray-900 rounded-md p-2 backdrop-blur-sm"
-    >
-      <option>English</option>
-      <option>Tamil</option>
-      <option>Kannada</option>
-      <option>Hindi</option>
-      <option>Telugu</option>
-      <option>Malayalam</option>
-      <option>Marathi</option>
-    </select>
-  </div>
-</div>
+        <div>
+          <label className="block text-sm font-medium text-white/90 mb-1">
+            Target Language
+          </label>
+          <select
+            value={targetLang}
+            onChange={(e) => setTargetLang(e.target.value)}
+            className="w-full border border-gray-300 bg-gray-100 text-gray-800 text-gray-900 rounded-md p-2 backdrop-blur-sm"
+          >
+            <option>English</option>
+            <option>Tamil</option>
+            <option>Kannada</option>
+            <option>Hindi</option>
+            <option>Telugu</option>
+            <option>Malayalam</option>
+            <option>Marathi</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Demo notice shown when Analyze is clicked in demo mode */}
+      {demoNotice && (
+        <div className="mb-6 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm">
+          <p className="font-semibold mb-1">Live analysis is disabled in this public demo</p>
+          <p>
+            The AI pipeline (Whisper, NLLB-200, mBERT, RoBERTa) needs several GB of RAM, so it runs locally rather than on free hosting. Pick one of the sample calls above to see real pipeline output, or run the project locally from the GitHub README to analyze your own audio.
+          </p>
+        </div>
+      )}
 
       {/* Analyze Button */}
       <div className="flex gap-4 justify-end mb-8">
@@ -226,7 +243,7 @@ const startAnalysis = async () => {
       </div>
 
       {/* Call ID Display */}
-      {currentCallId && (
+      {currentCallId && !isDemoMode() && (
         <div className="mb-6 p-4 bg-violet-500/10 border border-violet-400/30 rounded-lg">
           <p className="text-purple-700 text-sm mb-1 font-semibold">Call ID Generated</p>
           <div className="flex items-center justify-between">
@@ -293,17 +310,3 @@ const startAnalysis = async () => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
