@@ -1,4 +1,4 @@
-# MUSE — Multilingual Sentiment & Sarcasm Engine
+# MUSE — Multimodal Sentiment & Sarcasm Intelligence System
 
 > *Beyond words into emotions*
 
@@ -8,6 +8,38 @@ MUSE takes an audio recording or a piece of text, works out what was said, what 
 meant, and whether the two agree. It transcribes speech, translates across seven
 languages, classifies sentiment, and detects sarcasm by reading the words and the
 voice against each other.
+
+---
+
+## Live demo
+
+**[muse-project-xi.vercel.app](https://muse-project-xi.vercel.app)** — click **Try Demo** to explore the dashboard, history, PDF export, and four real pipeline outputs (Hindi, Telugu, Malayalam).
+
+The public demo shows pre-computed results produced by the real pipeline. Live audio
+analysis runs five transformer models and needs several GB of RAM, which free hosting
+tiers can't provide, so it runs locally. See [Running it](#running-it).
+
+<!-- TODO: add a demo video link here, e.g. [Watch the 2-minute walkthrough](https://...) -->
+
+## Results
+
+| Task | Model | Accuracy |
+|---|---|---|
+| Sarcasm detection | mBERT embeddings + Logistic Regression | 93.36% |
+| Sentiment classification | RoBERTa (cardiffnlp/twitter-roberta-base-sentiment) | 86.29% |
+
+<!-- TODO: state the evaluation set, e.g. "measured on a held-out 20% split of ~3,400 labelled examples" -->
+
+Research paper: *"Cross Talk Sentiment: A Multi-Modal Approach for Sarcasm Detection in
+Customer Segment"*, presented at ICICTA 2026.
+
+## Screenshots
+
+<!-- TODO: add 3-4 images in docs/screenshots/ and reference them, e.g.
+![Dashboard](docs/screenshots/dashboard.png)
+![Results](docs/screenshots/results.png)
+![History and PDF report](docs/screenshots/history.png)
+-->
 
 ---
 
@@ -117,6 +149,7 @@ Telugu, Kannada, and Malayalam render correctly rather than as boxes.
 | Audio features | Librosa (pitch, RMS energy, MFCC) |
 | Database | MongoDB (PyMongo) |
 | Auth | PyJWT, bcrypt |
+| Hosting (demo) | Vercel |
 
 ---
 
@@ -127,7 +160,9 @@ Telugu, Kannada, and Malayalam render correctly rather than as boxes.
 - Python 3.10 or 3.11 (3.12+ has dependency issues; 3.10 is best tested)
 - Node.js 18+
 - MongoDB running locally
-- ~4 GB free disk for the models, downloaded automatically on first run
+- 8 GB RAM recommended: all models load into memory at startup
+- About 4 GB free disk for the models, downloaded automatically on first run
+- `ffmpeg` on your PATH (recommended; needed to decode some formats such as m4a/aac)
 
 ### 1. Clone and configure
 
@@ -138,7 +173,8 @@ cp .env.example .env
 ```
 
 Open `.env` and set `JWT_SECRET` to a long random string. The app refuses to start
-without it, by design.
+without it, by design. Set the MongoDB connection string there too if yours isn't the
+local default.
 
 ### 2. Backend
 
@@ -147,13 +183,18 @@ python -m venv venv
 venv\Scripts\activate          # Windows
 source venv/bin/activate       # macOS / Linux
 
+# No GPU? Install the CPU build of PyTorch first (avoids a multi-GB CUDA download):
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+
 pip install -r requirements.txt
 python create_all_users.py     # seeds demo accounts
 python app.py
 ```
 
 Runs on `http://127.0.0.1:5000`. First start downloads Whisper, mBERT, RoBERTa, and
-NLLB — expect several minutes and a few GB.
+NLLB — expect several minutes and a few GB. The trained sarcasm classifier
+(`backend/models/sarcasm_classifier.pkl`) is included in the repository, so no
+training is needed to run the app.
 
 ### 3. Frontend
 
@@ -165,7 +206,9 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Open `http://localhost:5173`. By default the frontend talks to
+`http://127.0.0.1:5000`. To point it elsewhere, create `frontend/.env` with
+`VITE_API_URL=https://your-backend-url`.
 
 ### Demo accounts
 
@@ -176,11 +219,22 @@ Open `http://localhost:5173`.
 To create an administrator, set a user's `role` field to `admin` in MongoDB, then sign
 in again — the role is carried in the JWT, so an existing session keeps the old one.
 
+### Demo mode (how the public site works)
+
+The hosted demo is the same frontend built with `VITE_DEMO_MODE=true`. In that mode:
+
+- `src/services/api.js` returns the pre-computed samples in `src/demo/demoData.js`
+  instead of calling a server.
+- The login page offers **Try Demo**, and the Analyze page offers four sample calls.
+- Live audio upload, registration, profile edits, and the admin panel are disabled.
+
+Leave `VITE_DEMO_MODE` unset (the default) for the full application.
+
 ---
 
-## Training the sarcasm classifier
+## Retraining the sarcasm classifier (optional)
 
-The trained model is not committed. To reproduce it:
+The trained classifier ships with the repository. To reproduce it:
 
 ```bash
 # 1. Obtain the dataset (see data/README.md) and place it at
@@ -194,9 +248,12 @@ python training/train_sarcasm_classifier.py
 ```
 
 This writes `backend/models/sarcasm_classifier.pkl`, which the API loads at startup.
+The evaluation scripts in `backend/evaluation/` produce confusion matrices and
+sentiment-vs-sarcasm scatter plots; their dependencies are already in
+`requirements.txt`.
 
-Evaluation scripts in `backend/evaluation/` produce confusion matrices and
-sentiment-vs-sarcasm scatter plots.
+> The pickle must be loaded with the same scikit-learn version that created it, which
+> is why `requirements.txt` pins that package.
 
 ---
 
@@ -235,10 +292,12 @@ backend/
   database/                 MongoDB config and models
   routes/                   auth, history, and admin blueprints
   evaluation/               training and evaluation scripts
+  models/                   trained sarcasm classifier
 frontend/
   src/pages/                user-facing screens
   src/pages/admin/          admin panel
-  src/services/api.js       API client
+  src/services/api.js       API client (with demo-mode switch)
+  src/demo/demoData.js      pre-computed sample calls for the public demo
   public/fonts/             Noto fonts for Indic PDF export
 training/                   embedding generation and classifier training
 data/                       dataset instructions (data not committed)
@@ -262,10 +321,17 @@ against a validation set. That is the next experiment worth running.
 **The audio tone score is a heuristic**, normalising mean pitch and RMS energy into a
 0–1 range. MFCCs are extracted but not yet used in the tone score.
 
+**Scripted test recordings.** The sample calls in the public demo come from scripted
+recordings, not real customer calls, so no personal data is involved.
+
 **No streaming.** Audio is processed after upload, not in real time.
 
 **Models load into memory at import**, so the first request after startup is slow and
 memory use is high. Lazy loading would help.
+
+**Free hosting can't run the full pipeline.** Whisper, NLLB-200, mBERT, and RoBERTa
+together need several GB of RAM, so the public site uses demo mode and the live
+pipeline runs locally.
 
 ---
 
@@ -277,6 +343,7 @@ memory use is high. Lazy loading would help.
 - [ ] Lazy model loading and a smaller Whisper variant for faster cold starts
 - [ ] Real-time streaming analysis
 - [ ] Docker Compose for one-command setup
+- [ ] Hosted live backend for the public demo
 
 ---
 
@@ -285,7 +352,8 @@ memory use is high. Lazy loading would help.
 The code in this repository is MIT licensed — see [LICENSE](LICENSE).
 
 Models downloaded at runtime carry their own licences. Note that NLLB-200 is
-released under CC-BY-NC, which restricts commercial use.
+released under CC-BY-NC, which restricts commercial use; swap the translation model
+before any commercial deployment.
 
 ---
 

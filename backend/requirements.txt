@@ -1,16 +1,17 @@
 # ============================================
-# Python Version Compatibility
+# MUSE backend dependencies
 # ============================================
-# ✅ RECOMMENDED: Python 3.9, 3.10, or 3.11
-# ⚠️ Python 3.12+ may have compatibility issues with some dependencies
-# ❌ Python 3.8 and below: Not recommended (missing features)
+# Python: 3.10 or 3.11 (best tested on 3.10.x)
+# Python 3.12+ may have compatibility issues with some dependencies.
 #
-# Best tested with: Python 3.10.x
+# No GPU? Install the CPU build of PyTorch first (avoids a multi-GB download):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#
+# scikit-learn must match the version that trained sarcasm_classifier.pkl,
+# otherwise the pickle may fail to load. Pin it with "==".
 # ============================================
 
-# ============================================
-# Flask Web Framework
-# ============================================
+# --- Flask web framework ---
 Flask==3.1.2
 flask-cors==6.0.2
 Werkzeug==3.1.5
@@ -22,63 +23,37 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 gunicorn>=21.2.0
 
-# ============================================
-# Machine Learning & Deep Learning
-# ============================================
+# --- Machine learning ---
 torch>=2.0.0
 transformers>=4.30.0
-scikit-learn>=1.3.0
+scikit-learn>=1.3.0      # pin to the version used to train the classifier
 joblib>=1.3.0
-sentencepiece>=0.1.99  # Required for NLLB-200
-protobuf>=3.20.0       # Required for NLLB-200 tokenizer
+sentencepiece>=0.1.99    # required by the NLLB-200 tokenizer
+protobuf>=3.20.0         # required by the NLLB-200 tokenizer
+sacremoses>=0.0.53       # required by the Marian tokenizer
 
-# ============================================
-# Audio Processing & Speech Recognition
-# ============================================
-faster-whisper>=1.0.0  # Optimized Whisper (4x faster, lower memory)
+# --- Audio and speech ---
+faster-whisper>=1.0.0
 librosa>=0.10.0
 soundfile>=0.12.0
 audioread>=3.0.0
 
-# ============================================
-# Data Processing
-# ============================================
+# --- Data processing ---
 numpy>=1.24.0
 pandas>=2.0.0
 
-# ============================================
-# NLP & Language Models
-# ============================================
-sentencepiece>=0.1.99
-sacremoses>=0.0.53
+# --- Database and authentication ---
+pymongo>=4.6.0
+dnspython>=2.0.0         # needed for mongodb+srv:// connection strings
+python-dotenv>=1.0.0
+bcrypt>=4.1.0
+PyJWT>=2.8.0
 
-# ============================================
-# Translation Models
-# ============================================
-# NLLB-200: Meta's No Language Left Behind
-# Supports 200+ languages with high quality
-# Model: facebook/nllb-200-distilled-600M (auto-downloaded)
-# ============================================
-
-# ============================================
-# Database & Authentication
-# ============================================
-pymongo>=4.6.0          # MongoDB driver
-dnspython>=2.0.0        # Required for MongoDB Atlas (mongodb+srv://)
-python-dotenv>=1.0.0    # Environment variables
-bcrypt>=4.1.0           # Password hashing
-PyJWT>=2.8.0            # JWT tokens for authentication
-
-# ============================================
-# Utilities
-# ============================================
+# --- Utilities ---
 tqdm>=4.65.0
 regex>=2023.0.0
 
-# ============================================
-# Evaluation & Metrics
-# ============================================
+# --- Evaluation and plotting (backend/evaluation/) ---
 matplotlib>=3.8.0
 seaborn>=0.13.0
 jiwer>=3.0.0
-
