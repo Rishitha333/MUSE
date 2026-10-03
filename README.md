@@ -16,7 +16,7 @@ MUSE takes an audio recording or a piece of text, works out what was said, what 
 
 | Task | Model | Accuracy |
 |---|---|---|
-| Sarcasm detection | mBERT embeddings + Logistic Regression | **93.36%** (held-out test set, n = TEST_SET_SIZE) |
+| Sarcasm detection | mBERT embeddings + Logistic Regression | **93.36%** |
 | Sentiment classification | RoBERTa (`cardiffnlp/twitter-roberta-base-sentiment`) | **86.29%** |
 
 **Research paper:** *"Cross Talk Sentiment: A Multi-Modal Approach for Sarcasm Detection in Customer Segment"*, presented at ICICTA 2026.
